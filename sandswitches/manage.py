@@ -110,7 +110,7 @@ class ConfigManager(object):
             BytesIO(etree.tostring(self.etree, pretty_print=True)),
             self.file.path
         )
-        self.fscli('reloadxml')
+        self.fscli.api('reloadxml')
         log.debug("freeswitch.xml commit took {} seconds"
                   .format(time.time() - now))
 
@@ -119,7 +119,7 @@ class ConfigManager(object):
         """
         # remove '===' "lines"
         lines = [
-            line for line in self.fscli('sofia', 'status').splitlines()
+            line for line in self.fscli.api('sofia status').splitlines()
             if '===' not in line]
         # pop summary line
         lines.pop(-1)
@@ -188,7 +188,7 @@ def manage_config(rootpath, sftp, fscli, log, singlefile=True):
     # copy to a local path and parse for speed
     start = time.time()
     _, localpath = tempfile.mkstemp(
-        prefix='{}-freeswitch-'.format(fscli.ssh._fqhost),
+        prefix='sandswitches-config',
         suffix='.xml',
     )
     with open(localpath, 'wb') as fxml:  # open as bytes
@@ -203,7 +203,7 @@ def manage_config(rootpath, sftp, fscli, log, singlefile=True):
     if not tree.xpath('section/configuration[@name="sofia.conf"]'):
         log.info("Dumping aggregate freeswitch.xml config...")
         # parse the single-document config
-        root = etree.fromstring(fscli('xml_locate', 'root'), parser=parser)
+        root = etree.fromstring(fscli.api('xml_locate root'), parser=parser)
         tree = etree.ElementTree(root)
 
         # remove all ignored whitespace from tail text since FS doesn't
