@@ -78,11 +78,10 @@ class SofiaProfile(TagMap):
         """
         start = time.time()
         log.info("starting profile '{}'".format(self.key))
-        self.confmng.fscli('sofia', 'profile', self.key, 'start',
-                           checkfail=lambda out: 'Failure'in out)
+        self.confmng.fscli.api('sofia profile {} start'.format(self.key))
         # poll for profile to come up
-        while 'Invalid Profile' in self.confmng.fscli(
-            'sofia', 'status', 'profile', self.key
+        while 'Invalid Profile' in self.confmng.fscli.api(
+            'sofia status profile'.format(self.key)
         ):
             time.sleep(0.5)
             if time.time() - start > timeout:
@@ -93,11 +92,10 @@ class SofiaProfile(TagMap):
 
     def restart(self):
         log.info("restarting profile '{}'".format(self.key))
-        self.confmng.fscli('sofia', 'profile', self.key, 'restart',
-                           checkfail=lambda out: 'Failure'in out)
+        self.confmng.fscli.api('sofia profile {} restart'.format(self.key))
         # poll for profile to come up
-        while 'Invalid Profile' in self.confmng.fscli(
-            'sofia', 'status', 'profile', self.key
+        while 'Invalid Profile' in self.confmng.fscli.api(
+            'sofia status profile {}'.format(self.key)
         ):
             time.sleep(0.5)
 
@@ -107,14 +105,11 @@ class SofiaProfile(TagMap):
         """
         start = time.time()
         log.info("stopping profile '{}'".format(self.key))
-        self.confmng.fscli('sofia', 'profile', self.key, 'stop',
-                           checkfail=lambda out: 'Failure'in out)
+        self.confmng.fscli.api('sofia profile {} stop'.format(self.key))
 
         # poll for profile to shut down
-        while 'Invalid Profile' not in self.confmng.fscli(
-            'sofia', 'profile', self.key, 'stop',
-            checkfail=lambda out: 'Failure' in out
-        ):
+        while 'Invalid Profile' not in self.confmng.fscli.api(
+            'sofia profile {} stop'.format(self.key)):
             time.sleep(1)
             if time.time() - start > timeout:
                 raise RuntimeError(
@@ -123,16 +118,12 @@ class SofiaProfile(TagMap):
                 )
 
     def register(self, gateway):
-        self.confmng.fscli(
-            'sofia', 'profile', self.key, 'register', gateway,
-            checkgw=lambda out: 'Invalid gateway!' in out
-        )
+        self.confmng.fscli.api(
+            'sofia profile {} register {}'.format(self.key, gateway))
 
     def unregister(self, gateway):
-        self.confmng.fscli(
-            'sofia', 'profile', self.key, 'unregister', gateway,
-            checkgw=lambda out: 'Invalid gateway!' in out
-        )
+        self.confmng.fscli.api(
+            'sofia profile {} unregister {}'.format(self.key, gateway))
 
 
 @model(
